@@ -1,0 +1,13 @@
+#!/bin/bash
+
+clingo rush_hour.lp -c l=2 | grep -A1 Answer | tr ' ' '\n' > data/data.dat
+
+cat data/data.dat | grep "iniziale(occupa" | cut -c 17-21  | tr ',' ' ' | sort > data/iniziale.dat
+
+cat data/data.dat | grep "occurs(move" | cut -c 18-26  | tr ',' ' ' | sort > data/occurs.dat
+
+
+
+cat data/data.dat
+
+python script/draw.py
