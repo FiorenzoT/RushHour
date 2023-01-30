@@ -1,0 +1,4 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n+nf}{goal}\PYG{p}{(}\PYG{n+nv}{T}\PYG{p}{)} \PYG{p}{:\PYGZhy{}} \PYG{n+nf}{time}\PYG{p}{(}\PYG{n+nv}{T}\PYG{p}{),} \PYG{n+nv}{T}\PYG{o}{\PYGZlt{}}\PYG{l+s+sAtom}{l}\PYG{p}{,} \PYG{n+nf}{position}\PYG{p}{(}\PYG{n+nv}{T}\PYG{p}{,}\PYG{l+s+sAtom}{r}\PYG{p}{,}\PYG{l+m+mi}{3}\PYG{p}{,}\PYG{l+m+mi}{5}\PYG{p}{).}
+\PYG{p}{:\PYGZhy{}} \PYG{o}{not} \PYG{n+nf}{goal}\PYG{p}{(}\PYG{k}{\PYGZus{}}\PYG{p}{).}
+\end{Verbatim}

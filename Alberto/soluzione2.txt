@@ -1,0 +1,107 @@
+La seconda soluzione tiene traccia della posizione di ogni auto come se fosse
+un singolo blocco. Questo approccio è dipendente dalle dimensioni delle auto
+coinvolte nel puzzle, ovvero, per auto di dimensioni diverse è necessario
+creare dei predicati ad hoc per le posizioni e il loro aggiornamento, le azioni
+e la loro esecuzione.
+
+
+In questa soluzione, per definire il puzzle, vengono usati i predicati:
+-time/1, serve a tenere traccia del numero di mosse effettuate in ogni momento;
+-grid/2, indica tutte le coordinate della griglia in cui le auto vengono poste;
+-no/2, indica se una certa posizione della griglia è invalicabile;
+-dir/1, indica la direzione verso cui l'auto può spostarsi;
+-orientation/1, indica il verso in cui l'auto può essere posta (orizzontale e
+verticale);
+-position/6 e position/7, indicano la posizione di una certa auto in un certo
+tempo.
+
+position(0, C, O, C1, C2, C3) e position(0, C, O, C1, C2, C3, C4)
+I predicati position con il primo argomento posto a zero indicano la posizione
+dell'auto C al tempo iniziale. O indica il verso dell'auto, mentre C1, C2, C3 e
+C4 indicano le coordinate sulla griglia dell'auto. Le coordinate sono
+dipendenti da O in questo modo:
+-Se O viene sostituito con l'atomo h, allora C1 rappresenta la coordinata X
+dell'auto, mentre C1, C2 e C3 rappresentano le coordinate Y.
+-Se O viene sostituito con l'atomo v, allora C1 rappresenta la coordinata Y
+dell'auto, mentre C1, C2 e C3 rappresentano le coordinate X.
+
+Usando questo approccio siamo in grado di spostare tutta l'auto in un solo
+colpo senza dover cercare tutti i predicati che appartengono a un'auto.
+Il problema di questo approccio è che non è parametrizzabile, quindi se ad
+esempio si volessero aggiungere auto di dimensione 4 è necessario estendere
+il programma.
+
+Per questione di comodità, da ora in poi vedremo le regole per le auto di
+dimensione 2 e orizzontali, ma è intuitivo ricavare le stesse regole per
+auto di dimensione 3 e poste verticalmente a partire dalle seguenti.
+
+
+position(T+1, C, h, C1, C2, C3) :-
+	cause(T, move(_, C), position(T+1, C, h, C1, C2, C3)),
+	time(T), time(T+1), car(C),
+	grid(C1, C2), grid(C1, C3).
+
+Questa regola position/6 serve ad aggiornare la posizione dell'auto C al tempo
+T+1 se è stata spostata al tempo T.
+
+
+position(T+1, C, h, C1, C2, C3) :-
+	not executed(T, move(_, C)),
+	position(T, C, h, C1, C2, C3),
+	time(T), car(C),
+	grid(C1, C2), grid(C1, C3).
+
+Questa regola position/6 corrisponde all'invariante di posizione. Se non è
+stata compiuta nessuna azione sull'auto C al tempo T allora la sua posizione
+sarà la stessa anche al tempo T+1.
+
+
+not_free(T, X, Y) :-
+	position(T, _, h, X, Y, _).
+not_free(T, X, Y) :-
+	position(T, _, h, X, _, Y).
+
+La regola not_free/3 indica che una cella (X,Y) della griglia è occupata al
+tempo T se c'è un auto che occupa quella posizione al tempo T.
+
+
+free(T, X, Y) :-
+	time(T), grid(X, Y),
+	not not_free(T, X, Y).
+
+La regola free/3 indica che una cella (X,Y) della griglia è libera al tempo T
+se non è occupata al tempo T.
+
+
+action(T, move(right, C)) :-
+	car(C), time(T),
+	position(T, C, h, X, Y1, Y2),
+	free(T, X, Y2+1),
+	not no(X, Y2+1),
+	grid(X, Y2+1).
+
+La regola action/2 indica che un'auto C può muoversi a destra nel tempo T se la
+cella alla sua destra immediata non è occupata da nessun'auto ed è valicabile.
+Lo stesso ragionamento viene applicato per gli spostamenti verso le altre
+direzioni.
+
+
+1 {executed(T, move(Dir, C)): action(T, move(Dir, C))} 1 :-
+	time(T), T < t.
+
+La regola executed/2 è quella che effettua l'azione, ovvero tra tutte le azioni
+generate tramite la regola action/2 ne sceglie una e la esegue.
+
+
+cause(T, move(right, C), position(T+1, C, h, X, Y1+1, Y2+1)) :-
+	executed(T, move(right, C)),
+	car(C), time(T+1), time(T),
+	position(T, C, h, X, Y1, Y2),
+	free(T, X, Y2+1),
+	not no(X, Y2+1),
+	grid(X, Y2+1).
+
+La regola cause/3 è necessario per effettuare l'update della posizione
+dell'auto C, spostata a destra di una casella tramite la regola executed/2.
+Lo stesso ragionamento viene applicato per gli spostamenti verso le altre
+direzioni.

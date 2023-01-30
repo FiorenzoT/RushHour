@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+gringo rush\PYGZus{}hour.lp configuration/sample02.lp \PYGZhy{}c \PYG{n+nv}{l}\PYG{o}{=}\PYG{l+m}{40} \PYG{p}{|} clasp \PYGZhy{}\PYGZhy{}stat
+\end{Verbatim}

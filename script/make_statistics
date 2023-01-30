@@ -1,0 +1,143 @@
+#!/bin/bash
+
+
+multishot=0
+
+cd /Users/ren/Documents/Università/Laurea\ Magistrale\ -\ UNIPR\ 2022-2024/1\ Anno\ Accademico\ 2022\ -\ 2023/Programmazione\ Dichiarativa/RushHour/
+
+
+
+echo "Elaborating my version..."
+
+ls configuration/sample* | grep .lp > data/temp.dat
+
+file='data/temp.dat'
+
+START_TIME=$(date +%s)
+
+for row in `cat $file`
+do
+	name=`echo $row | sed 's/configuration\///g' | sed 's/.lp//g'`
+
+	echo "  Elaborating configuration" $name 
+
+	N=`sed -n 1,1p $row | tr -d '%'`
+	
+	N=$((N))
+	
+	if [[ multishot -eq 1 ]]; 
+	then
+		python3 inc.py rush_hour_minimize.lp -c l=$N configuration/$row.lp > data/statistics/Fiorenzo_$name_multishot.csv
+	else
+		#gringo $row rush_hour_minimize.lp -c l=$N| clasp --stat | sed -n '/^OPTIMUM FOUND/,$p' > data/statistics/Fiorenzo_$name.csv
+		gringo $row rush_hour.lp -c l=$N| clasp --stat | sed -n '/^SATISFIABLE/,$p' > data/statistics/Fiorenzo_$name.csv
+	fi
+
+	
+done
+
+END_TIME=$(date +%s)
+
+echo "Time elapsed: $(($END_TIME - $START_TIME)) seconds"
+
+
+
+
+
+echo "Elaborating version of Alberto..."
+
+ls Alberto/sample* | grep .lp > data/temp.dat
+
+file='data/temp.dat'
+
+START_TIME=$(date +%s)
+
+for row in `cat $file`
+do
+	name=`echo $row | sed 's/Alberto\///g' | sed 's/.lp//g'`
+
+	echo "  Elaborating configuration" $name 
+
+	N=`sed -n 1,1p $row | tr -d '%'`
+	
+	N=$((N))
+
+	if [[ multishot -eq 1 ]]; 
+	then	# Multishot da completare
+		# python3 Alberto/inc.py Alberto/rush_hour.lp -c t=$N Alberto/$row.lp > data/statistics/Alberto_$name_multishot.csv
+		gringo $row Alberto/rush_hour.lp -c t=$N | clasp --stat | sed -n '/^OPTIMUM FOUND/,$p' > data/statistics/Alberto_$name_multishot.csv
+	else
+		#gringo $row Alberto/rush_hour.lp -c t=$N| clasp --stat | sed -n '/^OPTIMUM FOUND/,$p' > data/statistics/Alberto_$name.csv
+		gringo $row Alberto/rush_hour_no_minimize.lp -c t=$N| clasp --stat | sed -n '/^SATISFIABLE/,$p' > data/statistics/Alberto_$name.csv
+	fi
+	
+done
+
+END_TIME=$(date +%s)
+
+echo "Time elapsed: $(($END_TIME - $START_TIME)) seconds"
+
+
+
+rm data/temp.dat
+
+
+
+# cd /Users/ren/Documents/Università/Laurea\ Magistrale\ -\ UNIPR\ 2022-2024/1\ Anno\ Accademico\ 2022\ -\ 2023/Programmazione\ Dichiarativa/RushHour/
+
+
+
+if [[ multishot -eq 1 ]]; 
+then	# Multishot da completare
+	rm data/statistics/times_multishot.csv
+	files=`ls data/statistics/ | grep "multishot"`
+else
+	rm data/statistics/times_normal.csv
+	files=`ls data/statistics/`
+fi
+
+
+for row in $files
+do
+
+	if [[ multishot -eq 1 ]]; 
+	then	# Multishot da completare
+		echo "Completare"
+		echo $row >> data/statistics/times_multishot.csv
+		#cat data/statistics/$row | grep "(Solving:"  | cut -d ' ' -f 13 >> data/statistics/times_multishot.csv
+	else
+		echo $row >> data/statistics/times_normal.csv
+		single_time=`cat data/statistics/$row | grep "(Solving:"  | cut -d ' ' -f 13`
+		echo ${single_time%s}  >> data/statistics/times_normal.csv
+	fi
+	
+done
+
+
+
+echo "Finish!"
+echo "Stat saved in data/statistics"
+
+#gringo -c l=40 rushour.lp | clasp --stat
+
+
+
+python3 script/make_graph.py
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

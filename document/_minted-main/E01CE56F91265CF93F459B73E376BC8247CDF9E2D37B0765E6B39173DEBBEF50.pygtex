@@ -1,0 +1,5 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n+nf}{free}\PYG{p}{(}\PYG{n+nv}{T}\PYG{p}{,} \PYG{n+nv}{X}\PYG{p}{,} \PYG{n+nv}{Y}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{time}\PYG{p}{(}\PYG{n+nv}{T}\PYG{p}{),} \PYG{n+nf}{grid}\PYG{p}{(}\PYG{n+nv}{X}\PYG{p}{,} \PYG{n+nv}{Y}\PYG{p}{),}
+    \PYG{o}{not} \PYG{n+nf}{not\PYGZus{}free}\PYG{p}{(}\PYG{n+nv}{T}\PYG{p}{,} \PYG{n+nv}{X}\PYG{p}{,} \PYG{n+nv}{Y}\PYG{p}{).}
+\end{Verbatim}

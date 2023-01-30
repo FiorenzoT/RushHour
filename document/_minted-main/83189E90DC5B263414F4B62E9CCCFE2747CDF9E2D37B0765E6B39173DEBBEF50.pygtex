@@ -1,0 +1,4 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{l+m+mi}{1} \PYG{p}{\PYGZob{}}\PYG{n+nf}{executed}\PYG{p}{(}\PYG{n+nv}{T}\PYG{p}{,} \PYG{n+nf}{move}\PYG{p}{(}\PYG{n+nv}{Dir}\PYG{p}{,} \PYG{n+nv}{C}\PYG{p}{))}\PYG{l+s+sAtom}{:} \PYG{n+nf}{action}\PYG{p}{(}\PYG{n+nv}{T}\PYG{p}{,} \PYG{n+nf}{move}\PYG{p}{(}\PYG{n+nv}{Dir}\PYG{p}{,} \PYG{n+nv}{C}\PYG{p}{))\PYGZcb{}} \PYG{l+m+mi}{1} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{time}\PYG{p}{(}\PYG{n+nv}{T}\PYG{p}{),} \PYG{n+nv}{T} \PYG{o}{\PYGZlt{}} \PYG{l+s+sAtom}{t}\PYG{p}{.}
+\end{Verbatim}

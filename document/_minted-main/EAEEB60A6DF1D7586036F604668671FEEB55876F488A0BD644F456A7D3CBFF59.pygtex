@@ -1,0 +1,5 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+clingo configuration/sample01.lp rush\PYGZus{}hour\PYGZus{}minimize.lp \PYGZhy{}c \PYG{n+nv}{l}\PYG{o}{=}\PYG{l+m}{40}
+
+python3 inc.py configuration/sample01.lp rush\PYGZus{}hour\PYGZus{}multishot.lp
+\end{Verbatim}

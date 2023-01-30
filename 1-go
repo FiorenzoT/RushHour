@@ -1,13 +1,46 @@
 #!/bin/bash
 
-clingo rush_hour.lp -c l=2 | grep -A1 Answer | tr ' ' '\n' > data/data.dat
+if [[ "$#" -eq "0" || "$#" -eq "1" ]] ; then
+    echo "No arguments supplied\n"
+    echo "Usage:\t\tsh 1-go   NAME_OF_SAMPLE   TIMES \n\n"
+    exit 1
+fi
 
-cat data/data.dat | grep "iniziale(occupa" | cut -c 17-21  | tr ',' ' ' | sort > data/iniziale.dat
+configuration=$1
+times=$2
 
-cat data/data.dat | grep "occurs(move" | cut -c 18-26  | tr ',' ' ' | sort > data/occurs.dat
+
+# clingo configuration/$configuration rush_hour.lp -c l=90 -t 4 | grep -A1 Answer | tr ' ' '\n' > data/data.dat
+
+clingo configuration/$configuration rush_hour.lp -c l=$times -t 4 > data/data.dat
+
+
+# python3 inc.py rush_hour.lp -c l=$times configuration/$configuration > data/data.dat
+
+cat data/data.dat | tr ' ' '\n'  | grep "position" | tr ',' ' ' > data/position_temp.dat 
+
+sed -i '' 's.position(..' data/position_temp.dat
+
+sed -i '' 's.)..' data/position_temp.dat
+
+cat data/position_temp.dat | sort -k1 -n > data/position.dat
+
+
+
+cat data/data.dat | tr ' ' '\n'  | grep car\(  | tr ',' ' ' > data/cars.dat
+
+sed -i '' 's.car(..' data/cars.dat
+
+sed -i '' 's.)..' data/cars.dat
 
 
 
 cat data/data.dat
 
-python script/draw.py
+if [ ! -d "images/$configuration" ]; then
+    mkdir images/$configuration
+fi
+
+rm images/$configuration/*
+
+python script/draw.py $configuration

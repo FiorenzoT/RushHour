@@ -1,0 +1,7 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n+nf}{time}\PYG{p}{(}\PYG{l+m+mf}{0.}\PYG{p}{.}\PYG{l+s+sAtom}{l}\PYG{p}{).}
+\PYG{n+nf}{grid}\PYG{p}{(}\PYG{l+m+mf}{1..6}\PYG{p}{,}\PYG{l+m+mf}{1..6}\PYG{p}{).}
+\PYG{n+nf}{moveTo}\PYG{p}{(}\PYG{l+s+sAtom}{right}\PYG{p}{;} \PYG{l+s+sAtom}{left}\PYG{p}{;} \PYG{l+s+sAtom}{up}\PYG{p}{;} \PYG{l+s+sAtom}{down}\PYG{p}{).}
+\PYG{n+nf}{orientation}\PYG{p}{(}\PYG{l+s+sAtom}{h}\PYG{p}{;}\PYG{l+s+sAtom}{v}\PYG{p}{).}
+\PYG{n+nf}{cars}\PYG{p}{(}\PYG{l+s+sAtom}{r}\PYG{p}{;}\PYG{l+s+sAtom}{b}\PYG{p}{).}
+\end{Verbatim}

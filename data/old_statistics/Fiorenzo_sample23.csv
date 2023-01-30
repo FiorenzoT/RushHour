@@ -1,0 +1,32 @@
+SATISFIABLE
+
+Models       : 1+
+Calls        : 1
+Time         : 1553.296s (Solving: 1551.92s 1st Model: 1551.91s Unsat: 0.00s)
+CPU Time     : 1241.771s
+
+Choices      : 7159298 
+Conflicts    : 2453651  (Analyzed: 2453651)
+Restarts     : 4476     (Average: 548.18 Last: 2863)
+Model-Level  : 123.0   
+Problems     : 1        (Average Length: 0.00 Splits: 0)
+Lemmas       : 2453651  (Deleted: 2158332)
+  Binary     : 9354     (Ratio:   0.38%)
+  Ternary    : 24735    (Ratio:   1.01%)
+  Conflict   : 2453651  (Average Length:   89.4 Ratio: 100.00%) 
+  Loop       : 0        (Average Length:    0.0 Ratio:   0.00%) 
+  Other      : 0        (Average Length:    0.0 Ratio:   0.00%) 
+Backjumps    : 2453651  (Average:  2.69 Max: 813 Sum: 6593846)
+  Executed   : 2453651  (Average:  2.69 Max: 813 Sum: 6593846 Ratio: 100.00%)
+  Bounded    : 0        (Average:  0.00 Max:   0 Sum:      0 Ratio:   0.00%)
+
+Rules        : 79870    (Original: 72479)
+  Choice     : 8493    
+Atoms        : 44873    (Original: 42010 Auxiliary: 2863)
+Bodies       : 68638    (Original: 64185)
+  Count      : 1        (Original: 152)
+Equivalences : 152434   (Atom=Atom: 2917 Body=Body: 409 Other: 149108)
+Tight        : Yes
+Variables    : 52472    (Eliminated:    0 Frozen:    0)
+Constraints  : 177925   (Binary:  71.9% Ternary:  15.1% Other:  13.1%)
+

@@ -1,279 +1,109 @@
-%%%%% clingo rush_hour.lp -c l=2 | grep -A1 Answer | tr ' ' '\n' 
+%#program base.
+time(0..l).
 
-tempo(1..l).
-griglia(1..6,1..6).
-numero(-2..2).
+grid(1..6,1..6).
 
-car(r).
-car(b).
-car(k).
-car(g).
-car(c).
-car(m).
+moveTo(right; left; up; down).
 
+orientation(h;v).
 
+cars(r;b1;b2;b3;b4;b5;b6;b7;b8;b9;b10;b11;b12).
 
-% Posizionamento come matrice: riga, colonna
+dim(2;3).
 
-% ATTENZIONE: 	inserire le posizioni iniziali in ordine, 
-% 				sia per la macchina che per le coordinate (X,Y)!
 
-iniziale(occupa(r,3,1)).
-iniziale(occupa(r,3,2)).
 
-iniziale(occupa(b,3,4)).
-iniziale(occupa(b,4,4)).
-iniziale(occupa(b,2,4)).
 
-iniziale(occupa(k,5,2)).
-iniziale(occupa(k,5,3)).
-iniziale(occupa(k,5,4)).
+%#program step(l).
+%%%%%% Posizioni occupate dalle auto e posizioni libere
 
-iniziale(occupa(g,6,1)).
-iniziale(occupa(g,6,2)).
-iniziale(occupa(g,6,3)).
+busy(T, C, X, Y..Y+N-1) :- time(T), T<l, 
+                           position(T, C, X, Y), car(C, N, h), cars(C), dim(N).
 
-iniziale(occupa(c,3,6)).
-iniziale(occupa(c,4,6)).
+busy(T, C, X..X+N-1, Y) :- time(T), T<l, 
+                           position(T, C, X, Y), car(C, N, v), cars(C), dim(N).
 
-iniziale(occupa(m,4,3)).
-iniziale(occupa(m,3,3)).
+not_free(T,X,Y) 		:- time(T), T<l, 
+                           grid(X,Y), car(C,N,O), busy(T,C,X,Y), cars(C), dim(N), orientation(O).
 
+free(T, X, Y) 			:- time(T), T<l, 
+                           grid(X,Y), car(C,N,O), cars(C), dim(N), orientation(O), 
+                           not not_free(T,X,Y).
 
-% Calcola la dimensione di ciascuna auto
-dim(C,N) :- car(C), N = #count{ X,Y : iniziale(occupa(C,X,Y)) }.
 
 
+%%%%%% Mosse eseguibili al tempo T
 
-% Calcola l'indice al quale, sommata la posizione X,Y del blocco + 1, 
-% trovo un oggetto che non sia quello preso in considerazione.
-% Utilizzato per la move.
-indice(C,X,Y,I) :-	car(C), verso(C,o), numero(I),
-					griglia(X,Y), griglia(X,Y1), Y!=Y1,
-					fluente(occupa(C,X,Y)), fluente(occupa(C,X,Y1)),
-					Y>Y1, I=0.
+executable(T, C, right, X, Y+1) :- time(T), grid(X,Y+N),%grid(X,Y+N),
+                                   car(C, N, h), free(T, X, Y+N), cars(C), dim(N),
+                                   position(T, C, X, Y).
 
-indice(C,X,Y,I) :- 	car(C), verso(C,o), numero(I),
-					griglia(X,Y), griglia(X,Y1), Y!=Y1,
-					fluente(occupa(C,X,Y)), fluente(occupa(C,X,Y1)),
-					Y<Y1, I=Y1-Y.
+executable(T, C, left,  X, Y-1) :- time(T), grid(X,Y-1), 
+                                   car(C, N, h), free(T, X, Y-1), cars(C), dim(N),
+                                   position(T, C, X, Y).
 
-% Ad esempio con b in (3,3),(4,3), questo calcola:
-% 	indice(b,3,3,1)
-% ovvero, l'indice più piccolo e di quanto dista da quello più grande(da aggiungere)
-indice(C,X,Y,I) :-	car(C), verso(C,v), numero(I),
-					griglia(X,Y), griglia(X1,Y), X!=X1,
-					fluente(occupa(C,X,Y)), fluente(occupa(C,X1,Y)),
-					X>X1, I=0.
+executable(T, C, up, 	X-1, Y) :- time(T), grid(X-1,Y), 
+                                   car(C, N, v), free(T, X-1, Y), cars(C), dim(N),
+                                   position(T, C, X, Y).
 
-indice(C,X,Y,I) :- 	car(C), verso(C,v), numero(I),
-					griglia(X,Y), griglia(X1,Y), X!=X1,
-					fluente(occupa(C,X,Y)), fluente(occupa(C,X1,Y)),
-					X<X1, I=X1-X.
+executable(T, C, down, 	X+1, Y) :- time(T), grid(X+N,Y), %grid(X+N,Y),  
+                                   car(C, N, v), free(T, X+N, Y), cars(C), dim(N),
+                                   position(T, C, X, Y).
 
 
 
+%%%%%% Scelta di una tra le mosse eseguibili
 
+1{move(T, C, MOV) : car(C,N,O), executable(T,C,MOV,X,Y), dim(N), orientation(O), moveTo(MOV)}1 :- time(T), T<l.
 
-verso(C,o) :- car(C), iniziale(occupa(C,X,Y)), griglia(X,Y), iniziale(occupa(C,X,Y1)), Y!=Y1.
-verso(C,v) :- car(C), iniziale(occupa(C,X,Y)), griglia(X,Y), iniziale(occupa(C,X1,Y)), X!=X1.
 
 
-finale(occupa(r,3,5)).
-finale(occupa(r,3,6)).
+%%%%%% Aggiornamento posizioni
 
+position(T,C,X,Y) :- time(T), time(T-1), T<l, 
+                     position(T-1,C,X,Y), car(C,N,O), dim(N), orientation(O), 
+                     not move(T-1, C, right), not move(T-1, C, left), not move(T-1, C, up), not move(T-1, C, down).
 
+% Inserendo solo le 4 regole di sotto, non era possibile tenere traccia degli oggetti che non si spostavano. 
+% Per questo è necessario inserire la regola di sopra.
+% Attenzione: nel corpo della regola, le X e le Y sono relative al tempo precedente! Se ci si è spostati a destra, si era in Y-1
 
-fluente(not_libero(X,Y)	) 		:- griglia(X,Y), fluente(occupa(C,X,Y)), car(C).
-fluente(libero(X,Y)		) 		:- griglia(X,Y), not fluente(not_libero(X,Y)), car(C).
+position(T,C,X,Y) :- moveTo(right), time(T), time(T-1), T<=l, 
+                     grid(X,Y-1), position(T-1,C,X,Y-1), car(C,N,h), dim(N),
+                     move(T-1,C,right), not move(T-1, C, left), not move(T-1, C, up), not move(T-1, C, down).
 
+position(T,C,X,Y) :- moveTo(left), time(T), time(T-1), T<l, 
+                     grid(X,Y+1), position(T-1,C,X,Y+1), car(C,N,h), dim(N),
+                     move(T-1,C,left), not move(T-1, C, right), not move(T-1, C, up), not move(T-1, C, down).
 
-fluente(occupa(C,X,Y)	) 		:- car(C), griglia(X,Y), verso(C,o), iniziale(occupa(C,X,Y)).
-fluente(occupa(C,X,Y)	) 		:- car(C), griglia(X,Y), verso(C,v), iniziale(occupa(C,X,Y)).
+position(T,C,X,Y) :- moveTo(up), time(T), time(T-1), T<l, 
+                     grid(X+1,Y), position(T-1,C,X+1,Y), car(C,N,v), dim(N),
+                     move(T-1,C,up), not move(T-1, C, down), not move(T-1, C, left), not move(T-1, C, right).
 
+position(T,C,X,Y) :- moveTo(down), time(T), time(T-1), T<l, 
+                     grid(X-1,Y), position(T-1,C,X-1,Y), car(C,N,v), dim(N),
+                     move(T-1,C,down), not move(T-1, C, up), not move(T-1, C, left), not move(T-1, C, right).
 
 
 
+goal(T) :- time(T), position(T,r,3,5).
 
 
+%#minimize {T: goal(T)}.
 
 
-% azione(move_right	(C,X,Y+1)) 	:- 	car(C), car(O), verso(C,o), C!=O, indice(C,X,Y,I),
-% 									griglia(X,Y), griglia(X,Y+1),
-% 									fluente(occupa(C,X,Y)), fluente(libero(X,Y+I+1)), not fluente(occupa(O,X,Y+I+1)).
+%#program check(l).
+:- not goal(l).
 
-% azione(move_left	(C,X,Y-1)) 	:- 	car(C), car(O), verso(C,o), C!=O, indice(C,X,Y,I), dim(C,N),
-% 									griglia(X,Y), griglia(X,Y-1),
-% 									fluente(occupa(C,X,Y)), fluente(libero(X,Y+I-N)), not fluente(occupa(O,X,Y+I-N)).
 
-% azione(move_up		(C,X-1,Y)) 	:- 	car(C), car(O), verso(C,v), C!=O, indice(C,X,Y,I), dim(C,N),
-% 									griglia(X,Y), griglia(X-1,Y),
-% 									fluente(occupa(C,X,Y)), fluente(libero(X+I-N,Y)), not fluente(occupa(O,X+I-N,Y)).
 
-% azione(move_down	(C,X+1,Y)) 	:- 	car(C), car(O), verso(C,v), C!=O, indice(C,X,Y,I), dim(C,N),
-% 									griglia(X,Y), griglia(X+1,Y),
-% 									fluente(occupa(C,X,Y)), fluente(libero(X+I+1,Y)), not fluente(occupa(O,X+I+1,Y)).
 
 
-
-
-
-azione(C, move_right	(X,Y+1)) 	:- 	car(C), car(O), verso(C,o), C!=O, indice(C,X,Y,I),
-									griglia(X,Y), griglia(X,Y+1),
-									fluente(occupa(C,X,Y)), fluente(libero(X,Y+I+1)), not fluente(occupa(O,X,Y+I+1)).
-
-azione(C, move_left	(X,Y-1)) 	:- 	car(C), car(O), verso(C,o), C!=O, indice(C,X,Y,I), dim(C,N),
-									griglia(X,Y), griglia(X,Y-1),
-									fluente(occupa(C,X,Y)), fluente(libero(X,Y+I-N)), not fluente(occupa(O,X,Y+I-N)).
-
-azione(C, move_up		(X-1,Y)) 	:- 	car(C), car(O), verso(C,v), C!=O, indice(C,X,Y,I), dim(C,N),
-									griglia(X,Y), griglia(X-1,Y),
-									fluente(occupa(C,X,Y)), fluente(libero(X+I-N,Y)), not fluente(occupa(O,X+I-N,Y)).
-
-azione(C, move_down	(X+1,Y)) 	:- 	car(C), car(O), verso(C,v), C!=O, indice(C,X,Y,I), dim(C,N),
-									griglia(X,Y), griglia(X+1,Y),
-									fluente(occupa(C,X,Y)), fluente(libero(X+I+1,Y)), not fluente(occupa(O,X+I+1,Y)).
-
-
-
-
-
-
-exec(move_right	(C,X,Y+1), 	libero(X,Y+1)) 	:- 	car(C), car(O), verso(C,o), C!=O, indice(C,X,Y,I), dim(C,N),
-												griglia(X,Y), griglia(X,Y+1),
-												fluente(occupa(C,X,Y)), fluente(libero(X,Y+I+1)), not fluente(occupa(O,X,Y+I+1)).
-
-exec(move_left	(C,X,Y-1), 	libero(X,Y-1)) 	:- 	car(C), car(O), verso(C,o), C!=O, indice(C,X,Y,I), dim(C,N),
-												griglia(X,Y), griglia(X,Y-1),
-												fluente(occupa(C,X,Y)), fluente(libero(X,Y+I-N)), not fluente(occupa(O,X,Y+I-N)).
-
-exec(move_up	(C,X-1,Y), 	libero(X-1,Y)) 	:- 	car(C), car(O), verso(C,v), C!=O, indice(C,X,Y,I), dim(C,N),
-												griglia(X,Y), griglia(X-1,Y),
-												fluente(occupa(C,X,Y)), fluente(libero(X+I-N,Y)), not fluente(occupa(O,X+I-N,Y)).
-
-exec(move_down	(C,X+1,Y), 	libero(X+1,Y)) 	:- 	car(C), car(O), verso(C,v), C!=O, indice(C,X,Y,I), dim(C,N),
-												griglia(X,Y), griglia(X+1,Y),
-												fluente(occupa(C,X,Y)), fluente(libero(X+I+1,Y)), not fluente(occupa(O,X+I+1,Y)).
-
-
-
-
-causa(move_right(C,X,Y+1), 	neg(libero(X,Y+1))	) :- 	car(C), car(O), verso(C,o), C!=O, indice(C,X,Y,I),
-														griglia(X,Y), griglia(X,Y+1),
-														not fluente(occupa(C,X,Y+I)), not fluente(occupa(C,X,Y+I+1)), not fluente(occupa(O,X,Y+I+1)).
-
-causa(move_left	(C,X,Y-1), 	neg(libero(X,Y-1))	) :- 	car(C), car(O), verso(C,o), C!=O, indice(C,X,Y,I),
-														griglia(X,Y), griglia(X,Y-1),
-														not fluente(occupa(C,X,Y+I-1)), not fluente(occupa(C,X,Y+I-1)), not fluente(occupa(O,X,Y+I-1)).
-
-causa(move_up	(C,X-1,Y), 	neg(libero(X-1,Y))	) :- 	car(C), car(O), verso(C,o), C!=O, indice(C,X,Y,I),
-														griglia(X,Y), griglia(X-1,Y),
-														not fluente(occupa(C,X+I-1,Y)), not fluente(occupa(O,X+I-1,Y)), not fluente(occupa(O,X+I-1,Y)).
-													
-causa(move_down	(C,X+1,Y), 	neg(libero(X+1,Y))	) :- 	car(C), car(O), verso(C,o), C!=O, indice(C,X,Y,I),
-														griglia(X,Y), griglia(X+1,Y),
-														not fluente(occupa(C,X+I+1,Y)), not fluente(occupa(O,X+I+1,Y)), not fluente(occupa(O,X+I+1,Y)).
-
-
-
-
-
-
-% not_goal(T) :- tempo(T), finale(F), not holds(F,T). 
-% goal(T) :- tempo(T), not not_goal(T).
-
-% goal(T) :- tempo(T), finale(F), holds(F,T).
-
-% :- not goal(l).
-
-
-
-% eseguibile(A,T) 		:- tempo(T), T < l, azione(A).
-% not_eseguibile(A,T) 	:- tempo(T), exec(A,F), not holds(F,T), fluente(F). 
-
-%eseguibile(azione(move_right(C,X,Y)),T) :- car(C), griglia(X,Y), tempo(T), T < l.
-
-
-
-% holds(F,0) 	:- iniziale(F).
-% holds(F,T+1) :- T < l, eseguibile(A,T), occurs(A,T), causa(A,F).
-
-
-
-
-
-possibilita(C,scelta(MOV,MOV1)) 		:- 	azione(C,MOV), azione(C,MOV1), MOV!=MOV1, dim(C,2).
-possibilita(C,scelta(MOV,MOV1,MOV2)) 	:- 	azione(C,MOV), azione(C,MOV1), azione(C,MOV2), MOV!=MOV1, MOV!=MOV2, MOV1!=MOV2, dim(C,3).
-
-1{ occurs(C,A,T) : possibilita(C,A), car(C) }1 :- tempo(T), T < l.
-
-		% mossa(move_right(C,X,Y),C) 	:- azione(move_right(C,X,Y)).%, fluente(occupa(C,X,Y)), griglia(X,Y).
-		% mossa(move_left(C,X,Y),C) 	:- azione(move_left(C,X,Y)).
-		% mossa(move_up(C,X,Y),C) 	:- azione(move_up(C,X,Y)).
-		% mossa(move_down(C,X,Y),C) 	:- azione(move_down(C,X,Y)).
-
-
-		% 1{ possibilita(scelta(A,A1)) 		: 	mossa(A,C), mossa(A1,C), 				A!=A1, dim(C,2) }1.
-		% 1{ possibilita(scelta(A,A1,A2)) 	: 	mossa(A,C), mossa(A1,C), mossa(A2,C), 	A!=A1, A!=A2, A1!=A2, dim(C,3) }1.
-
-		% 1{ occurs(A,T) : possibilita(A) }1 :- tempo(T), T < l.
-
-%3{ occurs(A,T) : mossa(A,C), azione(A), car(C), dim(C,3) }3 :- tempo(T), T < l.
-
-
-
-%N{ test(C) : car(C) }N :- dim(C,N).
-
-% 1 {azione(move_right(C,X,Y+N)	)	: car(C), griglia(X,Y+N), griglia(X,Y), fluente(occupa(C,X,Y)), verso(C,o)}1 :- dim(C,N).
-
-% 1 {azione(move_right(C,X,Y-N)	)	: car(C), griglia(X,Y-N), griglia(X,Y), fluente(occupa(C,X,Y)), verso(C,o)}1 :- dim(C,N).
-
-
-
-
-
-
-% eseguibile(A,T) :- tempo(T), T < l, azione(A), exec(A,F), fluente(F).
-
-% 1{ occurs(A,T) : azione(A), eseguibile(A,T) }1 :- tempo(T), T < l.
-
-
-
-% opposto(F,neg(F)) :- fluente(F).
-% opposto(neg(F),F) :- fluente(F).
-
-
-% not_eseguibile(A,T) 	:- tempo(T), exec(A,F), not holds(F,T). 
-% eseguibile(A,T) 		:- tempo(T), T < l, not not_eseguibile(A,T), azione(A).
-% not_eseguibile(A,T) 	:- tempo(T), exec(A,F), not holds(F,T). 
-
-
-% holds(F,T+1) 	:- T < l, eseguibile(A,T), occurs(A,T), causa(A,F).
-% holds(F,T+1) 	:- T < l, occurs(A,T), causa(A,F).
-
-
-% % Inerzia
-% % holds(F,T+1) 	:- opposto(F,G), T < l, holds(F,T), not holds(G,T+1).
-
-
-
-% 1{ occurs(A,T) : azione(A), eseguibile(A,T) }1 :- tempo(T), T < l.
-% 1{ occurs(A,T) : azione(A) }1 :- tempo(T), T < l.
-
-
-
-
-
-% #show eseguibile/2.
-% #show fluente/1.
-% #show azione/1.
-% #show occurs/2.
-% #show holds/2.
-% #show exec/2.
-% #show causa/2.
-% #show goal/1.
-
-
-
-
-
+% #show position/4.
+% #show busy/4.
+% #show free/3.
+% #show move/3.
+% #show moved/3.
+% #show parked/2.
+% #show movable/2.
+% #show executable/5.
